@@ -126,6 +126,7 @@ class _RocketHomeState extends State<RocketHome> {
                   border: Border.all(color: Colors.black),
                   borderRadius: BorderRadius.circular(15.0),
                   // image: DecorationImage(image: NetworkImage(image), fit: BoxFit.cover)
+                  // rocket display img
                 ),
                 clipBehavior: Clip.hardEdge,
                 child: FadeInImage.assetNetwork(
