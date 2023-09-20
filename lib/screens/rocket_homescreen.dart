@@ -2,7 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:spacex_rocketdetails/controllers/rocket_homescreen_controller.dart';
 import 'package:spacex_rocketdetails/models/rocket-models.dart';
+import 'package:get/get.dart';
 
 class RocketHome extends StatefulWidget {
   const RocketHome({super.key});
@@ -12,20 +14,28 @@ class RocketHome extends StatefulWidget {
 }
 
 class _RocketHomeState extends State<RocketHome> {
+  final RocketHomeScreenController controller =
+      Get.put(RocketHomeScreenController());
+
   Future<List<RocketModel>> rocket = getRocket();
 
   static Future<List<RocketModel>> getRocket() async {
-    const url = "https://api.spacexdata.com/v4/rockets";
-    final response = await http.get(Uri.parse(url));
-    if (response.statusCode == 200) {
-      List body = json.decode(response.body);
-      print(response.body);
+    try {
+      const url = "https://api.spacexdata.com/v4/rockets";
+      final response = await http.get(Uri.parse(url));
 
-      return body.map((rocket) => RocketModel.fromJson(rocket)).toList();
+      if (response.statusCode == 200) {
+        List body = json.decode(response.body);
+        print(response.body);
 
-      //  body.map((data) => RocketModel.fromJson(data)).toList();
-    } else {
-      throw Exception('Failed to load post');
+        return body.map((rocket) => RocketModel.fromJson(rocket)).toList();
+      } else {
+        throw Exception('Failed to load post');
+      }
+    } on Exception catch (e) {
+      // make it explicit that this function can throw exceptions
+      print(e.toString());
+      rethrow;
     }
   }
 
@@ -44,55 +54,25 @@ class _RocketHomeState extends State<RocketHome> {
             child: Text("SpaceX Rocket"),
           ),
         ),
-        body: Center(
-            child: FutureBuilder(
-                future: rocket,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    // final rocket = snapshot.data!;
-                    final rockets = snapshot.data!;
-                    return buildRocket(rockets);
-                  } else {
-                    return const Text('No Data');
-                  }
-                }))
-        // FutureBuilder<Rocket>(
-        //   future: futureAlbum,
-        //   builder: (context, snapshot) {
-        //     if (snapshot.hasData) {
-        //       return Text(snapshot.data!.name!);
-        //     } else if (snapshot.hasError) {
-        //       return Center(child: Text('${snapshot.error}'));
-        //     }
-
-        //     // By default, show a loading spinner.
-        //     return Center(child: const CircularProgressIndicator());
-        //   },
-        // ), // body: SafeArea(
-        //   child: Column(
-        //     children: [
-        //       Padding(
-        //         padding: const EdgeInsets.all(8.0),
-        //         child: Container(
-        //           height: MediaQuery.of(context).size.height / 2,
-        //           width: MediaQuery.of(context).size.height / 1,
-        //           decoration: const BoxDecoration(color: Colors.green),
-        //           child: const Center(child: Text('image')),
-        //         ),
-        //       ),
-        //       const Text('Name :'),
-        //       const SizedBox(
-        //         height: 20,
-        //       ),
-        //       const Text('Country:'),
-        //       const SizedBox(
-        //         height: 20,
-        //       ),
-        //       const Text('Engines Count :'),
-        //     ],
-        //   ),
-        // ),
-        );
+        body: SafeArea(child:
+            GetBuilder<RocketHomeScreenController>(builder: (controller) {
+          return Padding(
+            padding:
+                const EdgeInsets.only(top: 15, bottom: 10, right: 10, left: 10),
+            child: Center(
+                child: FutureBuilder(
+                    future: rocket,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        // final rocket = snapshot.data!;
+                        final rockets = snapshot.data!;
+                        return buildRocket(rockets);
+                      } else {
+                        return const Text('No Data');
+                      }
+                    })),
+          );
+        })));
   }
 
   Widget buildRocket(List<RocketModel> rockets) => ListView.builder(
